@@ -74,6 +74,7 @@ export function buildYear(): HebMonth[] {
   const sedra = new Sedra(year, true) // true = Israel schedule
   const order = monthOrder(year)
   const omerStart = new HDate(16, 'Nisan', year).abs() // 1st day of the Omer
+  const chanukahStart = new HDate(25, 9, year).abs() // 25 Kislev — Day 1 (נר א׳)
 
   return order.map((m, i) => {
     const days: DayInfo[] = []
@@ -92,9 +93,21 @@ export function buildYear(): HebMonth[] {
       // Keep only traditional Jewish/Hebrew holidays; drop modern Israeli
       // national days (Yom HaAtzmaut, Yom HaZikaron, Yom HaShoah, Yom
       // Yerushalayim, etc.), which hebcal marks with the MODERN_HOLIDAY flag.
+      // Chanukah calculation based on Hebrew dates (day begins at sunset):
+      // Day 1 (נר א׳) is on 25 Kislev, running 8 days through 2 Tevet (נר ח׳ / זאת חנוכה).
+      const chanukahOffset = hd.abs() - chanukahStart
+      const isChanukah = chanukahOffset >= 0 && chanukahOffset < 8
+
+      // Holidays for the day (Israel schedule). Keep the full list, but order
+      // real Yamim Tovim before Rosh Chodesh / Mevarchim so the primary reads right.
+      // Keep only traditional Jewish/Hebrew holidays; drop modern Israeli
+      // national days (Yom HaAtzmaut, Yom HaZikaron, Yom HaShoah, Yom
+      // Yerushalayim, etc.), which hebcal marks with the MODERN_HOLIDAY flag.
       const evs = (HebrewCalendar.getHolidaysOnDate(hd, true) || []).filter((e) => {
         if ((e.getFlags() & flags.MODERN_HOLIDAY) !== 0) return false
         const desc = e.getDesc()
+        // Drop Hebcal's default Chanukah events so our exact Hebrew-date based ones take over
+        if (/Chanukah/i.test(desc)) return false
         // Drop minor observances the user doesn't want on the calendar.
         if (/^Ta'anit BeHaB$/.test(desc)) return false
         if (/^Yom Kippur Katan\b/.test(desc)) return false
@@ -102,16 +115,34 @@ export function buildYear(): HebMonth[] {
         if (/^Rosh Hashana LaBehemot$/.test(desc)) return false
         return true
       })
+
+      // Purim in Adar II (14 = Purim, 15 = Shushan Purim) and Lag BaOmer (18 Iyyar)
+      // are given festive color treatment like Yamim Tovim.
+      const isPurim = m === 13 && (d === 14 || d === 15)
+      const isLagBaOmer = m === 2 && d === 18
+
       const isYomTov = evs.some((e) => (e.getFlags() & flags.CHAG) !== 0)
       const isCholHamoed = evs.some((e) => (e.getFlags() & flags.CHOL_HAMOED) !== 0)
-      const isChanukah = evs.some(
-        (e) => (e.getFlags() & flags.CHANUKAH_CANDLES) !== 0 || /Chanukah/.test(e.getDesc()),
-      )
-      const isFestive = isYomTov || isCholHamoed || isChanukah
+      const isFestive = isYomTov || isCholHamoed || isChanukah || isPurim || isLagBaOmer
       const holidays = evs
         .slice()
         .sort((a, b) => (b.getFlags() & flags.CHAG) - (a.getFlags() & flags.CHAG))
         .map((e) => strip(e.renderBrief('he')).replace(/\s*\d{3,4}\s*$/, ''))
+
+      if (isChanukah) {
+        const CHANUKAH_NAMES = [
+          'חנוכה: נר א׳',
+          'חנוכה: נר ב׳',
+          'חנוכה: נר ג׳',
+          'חנוכה: נר ד׳',
+          'חנוכה: נר ה׳',
+          'חנוכה: נר ו׳',
+          'חנוכה: נר ז׳',
+          'חנוכה: נר ח׳ (זאת חנוכה)',
+        ]
+        holidays.unshift(CHANUKAH_NAMES[chanukahOffset])
+      }
+
       const holiday = holidays[0]
 
       // Parsha on Shabbat
@@ -128,6 +159,8 @@ export function buildYear(): HebMonth[] {
       // Omer count (16 Nisan → 5 Sivan)
       const omerNum = hd.abs() - omerStart + 1
       const omer = omerNum >= 1 && omerNum <= 49 ? omerNum : undefined
+      // On Lag BaOmer (omer 33), holiday already displays 'ל״ג בעומר' so omit duplicate omerText
+      const omerText = omer && omer !== 33 ? `${gematriya(omer)} בעומר` : undefined
 
       const iso = isoOf(date)
       days.push({
@@ -147,7 +180,7 @@ export function buildYear(): HebMonth[] {
         isFestive,
         isToday: iso === todayIso,
         omer,
-        omerText: omer ? `${gematriya(omer)} בעומר` : undefined,
+        omerText,
         parsha,
       })
     }

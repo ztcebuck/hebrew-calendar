@@ -749,9 +749,7 @@ function DayCell({
             day.isFestive ? 'font-bold' : 'font-medium'
           } ${
             hasImage
-              ? day.isFestive
-                ? 'text-[var(--fest)] [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]'
-                : 'text-[var(--gold)] [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]'
+              ? 'inline-flex self-start rounded-sm bg-gradient-to-r from-amber-500 to-amber-600 px-1.5 py-0.5 text-[9px] sm:text-[9.5px] font-black text-white shadow-md border border-amber-300/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]'
               : day.isFestive
                 ? 'text-[var(--fest)]'
                 : day.holiday
@@ -763,7 +761,7 @@ function DayCell({
         </span>
       )}
 
-      {day.omerText && (
+      {day.omerText && !day.holiday?.includes('עומר') && (
         <span
           className={`relative mt-0.5 text-[9px] leading-tight sm:text-[10px] print:text-[7px] print:mt-0 ${
             hasImage ? 'text-white/80 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-[var(--ink-soft)]'
