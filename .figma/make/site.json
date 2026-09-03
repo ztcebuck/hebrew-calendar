@@ -1,0 +1,10 @@
+{
+  "description": "Displays a Hebrew calendar with Gregorian dates from Marheshvan 5787, allowing users to add personal events with images filling each day's square.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
