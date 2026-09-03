@@ -6,6 +6,8 @@ import { birthdayEvents } from './family-birthdays'
 import chanukiahImg from './imports/image.png'
 import sukkahImg from './imports/image-5.png'
 import jerusalemSnowImg from './assets/jerusalem-snow.jpg'
+import { AppleMonthView } from './AppleMonthView'
+import { APPLE_MONTH_THEMES } from './apple-themes'
 
 /* ─── Personal events ─── */
 type EventEntry = {
@@ -302,6 +304,21 @@ export default function App() {
     return null
   }, [months])
 
+  const [designMode, setDesignMode] = useState<'classic' | 'apple'>(() => {
+    try {
+      return (localStorage.getItem('hebcal-design-mode') as 'classic' | 'apple') || 'apple'
+    } catch {
+      return 'apple'
+    }
+  })
+
+  const handleDesignModeChange = (mode: 'classic' | 'apple') => {
+    setDesignMode(mode)
+    try {
+      localStorage.setItem('hebcal-design-mode', mode)
+    } catch {}
+  }
+
   const [monthIdxState, setMonthIdxState] = useState<number | null>(null)
   const monthIdx = monthIdxState ?? todayLocation?.monthIdx ?? 0
   const [selectedIso, setSelectedIso] = useState<string | null>(() => todayLocation?.iso ?? null)
@@ -355,9 +372,24 @@ export default function App() {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen w-full">
-      <Masthead onPrintMonth={handlePrintSingle} onPrintAll={handlePrintAll} />
-      <MonthTabs months={months} current={monthIdx} onSelect={goto} />
+    <div
+      dir="rtl"
+      className={`min-h-screen w-full transition-colors duration-300 ${
+        designMode === 'apple' ? 'bg-[#F4F4F7] text-zinc-900' : ''
+      }`}
+    >
+      <Masthead
+        onPrintMonth={handlePrintSingle}
+        onPrintAll={handlePrintAll}
+        designMode={designMode}
+        onDesignModeChange={handleDesignModeChange}
+      />
+      <MonthTabs
+        months={months}
+        current={monthIdx}
+        onSelect={goto}
+        designMode={designMode}
+      />
 
       {storageError && (
         <div className="screen-only mx-auto max-w-[1360px] px-5 pt-3">
@@ -372,34 +404,63 @@ export default function App() {
           <div>
             {months.map((m, idx) => (
               <div key={m.key} className="print-page">
-                <MonthPage
-                  month={m}
-                  events={shownEvents}
-                  selectedIso={selectedIso}
-                  onPrev={() => goto(idx - 1)}
-                  onNext={() => goto(idx + 1)}
-                  onPick={(d) => {
-                    setSelectedIso(d.iso)
-                    setEditorOpen(true)
-                  }}
-                />
+                {designMode === 'apple' ? (
+                  <AppleMonthView
+                    month={m}
+                    events={shownEvents}
+                    selectedIso={selectedIso ?? m.days[0].iso}
+                    onPrev={() => goto(idx - 1)}
+                    onNext={() => goto(idx + 1)}
+                    onPick={(d) => {
+                      setSelectedIso(d.iso)
+                      setEditorOpen(true)
+                    }}
+                  />
+                ) : (
+                  <MonthPage
+                    month={m}
+                    events={shownEvents}
+                    selectedIso={selectedIso}
+                    onPrev={() => goto(idx - 1)}
+                    onNext={() => goto(idx + 1)}
+                    onPick={(d) => {
+                      setSelectedIso(d.iso)
+                      setEditorOpen(true)
+                    }}
+                  />
+                )}
               </div>
             ))}
           </div>
         ) : (
           <div className="print-page">
-            <MonthPage
-              key={month.key}
-              month={month}
-              events={shownEvents}
-              selectedIso={selectedDay.iso}
-              onPrev={() => goto(monthIdx - 1)}
-              onNext={() => goto(monthIdx + 1)}
-              onPick={(d) => {
-                setSelectedIso(d.iso)
-                setEditorOpen(true)
-              }}
-            />
+            {designMode === 'apple' ? (
+              <AppleMonthView
+                key={month.key}
+                month={month}
+                events={shownEvents}
+                selectedIso={selectedDay.iso}
+                onPrev={() => goto(monthIdx - 1)}
+                onNext={() => goto(monthIdx + 1)}
+                onPick={(d) => {
+                  setSelectedIso(d.iso)
+                  setEditorOpen(true)
+                }}
+              />
+            ) : (
+              <MonthPage
+                key={month.key}
+                month={month}
+                events={shownEvents}
+                selectedIso={selectedDay.iso}
+                onPrev={() => goto(monthIdx - 1)}
+                onNext={() => goto(monthIdx + 1)}
+                onPick={(d) => {
+                  setSelectedIso(d.iso)
+                  setEditorOpen(true)
+                }}
+              />
+            )}
           </div>
         )}
       </main>
@@ -433,36 +494,93 @@ export default function App() {
 function Masthead({
   onPrintMonth,
   onPrintAll,
+  designMode,
+  onDesignModeChange,
 }: {
   onPrintMonth: () => void
   onPrintAll: () => void
+  designMode: 'classic' | 'apple'
+  onDesignModeChange: (mode: 'classic' | 'apple') => void
 }) {
   return (
     <header className="screen-only mx-auto max-w-[1360px] px-5 pt-3">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-[var(--ink)] pb-2">
+      <div
+        className={`flex flex-wrap items-center justify-between gap-3 pb-2.5 transition-colors ${
+          designMode === 'apple' ? 'border-b border-zinc-200/80' : 'border-b-2 border-[var(--ink)]'
+        }`}
+      >
         <div className="flex items-baseline gap-3">
-          <h1 className="font-display text-4xl leading-none font-black text-[var(--ink)]">תשפ״ז</h1>
-          <p className="font-display text-sm tracking-[0.3em] text-[var(--accent)] uppercase">
+          <h1
+            className={`leading-none font-black ${
+              designMode === 'apple'
+                ? 'text-4xl sm:text-5xl font-sans tracking-tight text-zinc-900'
+                : 'font-display text-4xl text-[var(--ink)]'
+            }`}
+          >
+            תשפ״ז
+          </h1>
+          <p
+            className={`uppercase ${
+              designMode === 'apple'
+                ? 'text-xs font-bold tracking-widest text-zinc-500'
+                : 'font-display text-sm tracking-[0.3em] text-[var(--accent)]'
+            }`}
+          >
             לוח השנה העברי
           </p>
-          <span className="hidden text-sm text-[var(--ink-soft)] sm:inline">
+          <span className="hidden text-sm text-zinc-400 sm:inline">
             ספטמבר 2026 – ספטמבר 2027
           </span>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Design Mode Switcher (Apple vs Classic) */}
+          <div className="flex items-center rounded-full bg-black/5 dark:bg-white/10 p-1 border border-black/10 backdrop-blur-md shadow-xs">
+            <button
+              onClick={() => onDesignModeChange('classic')}
+              className={`flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+                designMode === 'classic'
+                  ? 'bg-white text-zinc-900 shadow-sm border border-black/5'
+                  : 'text-zinc-600 hover:text-zinc-900'
+              }`}
+            >
+              <span>📜</span>
+              <span>קלאסי</span>
+            </button>
+            <button
+              onClick={() => onDesignModeChange('apple')}
+              className={`flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+                designMode === 'apple'
+                  ? 'bg-zinc-900 text-white shadow-sm'
+                  : 'text-zinc-600 hover:text-zinc-900'
+              }`}
+            >
+              <span className="text-sm font-normal"></span>
+              <span>Apple מודרני</span>
+            </button>
+          </div>
+
           <button
             onClick={onPrintMonth}
-            className="flex items-center gap-1.5 rounded-lg border border-[var(--line)] bg-[var(--paper-2)] px-3.5 py-1.5 text-xs font-semibold text-[var(--ink)] shadow-xs transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+            className={`flex items-center gap-1.5 rounded-xl border px-3.5 py-1.5 text-xs font-semibold shadow-xs transition-colors cursor-pointer ${
+              designMode === 'apple'
+                ? 'bg-white border-zinc-200 text-zinc-700 hover:border-zinc-400 hover:text-zinc-900'
+                : 'border-[var(--line)] bg-[var(--paper-2)] text-[var(--ink)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
+            }`}
           >
             <span>🖨️</span>
             <span>הדפסת חודש זה (A4)</span>
           </button>
           <button
             onClick={onPrintAll}
-            className="flex items-center gap-1.5 rounded-lg bg-[var(--accent)] px-3.5 py-1.5 text-xs font-semibold text-[var(--paper)] shadow-xs transition-colors hover:bg-[var(--accent-soft)]"
+            className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold shadow-xs transition-colors cursor-pointer ${
+              designMode === 'apple'
+                ? 'bg-zinc-900 text-white hover:bg-zinc-800'
+                : 'bg-[var(--accent)] text-[var(--paper)] hover:bg-[var(--accent-soft)]'
+            }`}
           >
             <span>📚</span>
-            <span>הדפסת כל השנה (13 חודשים ל-PDF)</span>
+            <span>הדפסת כל השנה (13 חודשים)</span>
           </button>
         </div>
       </div>
@@ -475,10 +593,12 @@ function MonthTabs({
   months,
   current,
   onSelect,
+  designMode,
 }: {
   months: HebMonth[]
   current: number
   onSelect: (i: number) => void
+  designMode: 'classic' | 'apple'
 }) {
   const activeRef = useRef<HTMLButtonElement>(null)
   useEffect(() => {
@@ -486,27 +606,62 @@ function MonthTabs({
   }, [current])
 
   return (
-    <nav className="screen-only sticky top-0 z-20 border-b border-[var(--line)] bg-[var(--paper)]/85 backdrop-blur-md">
+    <nav
+      className={`screen-only sticky top-0 z-20 border-b backdrop-blur-md transition-colors ${
+        designMode === 'apple'
+          ? 'border-zinc-200/60 bg-white/75 shadow-[0_4px_20px_rgba(0,0,0,0.03)]'
+          : 'border-[var(--line)] bg-[var(--paper)]/85'
+      }`}
+    >
       <div className="mx-auto flex max-w-[1360px] items-center gap-2 overflow-x-auto px-5 py-3">
         {months.map((m, i) => {
-          const theme = MONTH_THEMES[m.key]
+          const classicTheme = MONTH_THEMES[m.key]
+          const appleTheme = APPLE_MONTH_THEMES[m.key]
           const isActive = i === current
+
+          if (designMode === 'apple') {
+            return (
+              <button
+                key={m.key}
+                ref={isActive ? activeRef : undefined}
+                onClick={() => onSelect(i)}
+                style={
+                  isActive && appleTheme
+                    ? {
+                        backgroundColor: appleTheme.accentColor,
+                        color: '#ffffff',
+                        boxShadow: `0 4px 14px ${appleTheme.accentColor}40`,
+                      }
+                    : undefined
+                }
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-bold transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer ${
+                  isActive
+                    ? 'shadow-sm'
+                    : 'bg-zinc-100/80 text-zinc-600 hover:bg-zinc-200/80 hover:text-zinc-900 border border-zinc-200/50'
+                }`}
+              >
+                <span>{appleTheme?.icon}</span>
+                <span>{m.heName}</span>
+              </button>
+            )
+          }
+
           return (
             <button
               key={m.key}
               ref={isActive ? activeRef : undefined}
               onClick={() => onSelect(i)}
               style={
-                isActive && theme
+                isActive && classicTheme
                   ? {
-                      borderColor: theme.accent,
-                      backgroundColor: theme.accent,
+                      borderColor: classicTheme.accent,
+                      backgroundColor: classicTheme.accent,
                       color: 'var(--paper)',
                       boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
                     }
                   : undefined
               }
-              className={`font-display shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-all ${
+              className={`font-display shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-all cursor-pointer ${
                 isActive
                   ? 'shadow-sm'
                   : 'border-[var(--line)] bg-[var(--paper-2)] text-[var(--ink-soft)] hover:border-[var(--accent-soft)] hover:text-[var(--ink)]'
