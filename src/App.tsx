@@ -166,11 +166,12 @@ const MONTH_THEMES: Record<string, MonthTheme> = {
     photoStyle: {
       backgroundSize: 'cover',
       backgroundPosition: 'center 35%',
+      opacity: 0.25,
       filter: 'none',
     },
-    paperOpacity: 0.52,
+    paperOpacity: 0.82,
     tintGrad:
-      'radial-gradient(ellipse at 50% 15%, rgba(60,94,136,0.18) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(200,165,85,0.14) 0%, transparent 55%)',
+      'radial-gradient(ellipse at 50% 15%, rgba(60,94,136,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(200,165,85,0.06) 0%, transparent 55%)',
     stripeGrad: 'linear-gradient(to left, #1B3250, #3C5E88)',
   },
   // שבט — Tu BiShvat, almond blossom
