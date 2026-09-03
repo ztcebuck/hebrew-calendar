@@ -5,6 +5,7 @@ import { buildYear, type DayInfo, type HebMonth } from './hebrew-calendar'
 import { birthdayEvents } from './family-birthdays'
 import chanukiahImg from './imports/image.png'
 import sukkahImg from './imports/image-5.png'
+import jerusalemSnowImg from './assets/jerusalem-snow.jpg'
 
 /* ─── Personal events ─── */
 type EventEntry = {
@@ -155,22 +156,22 @@ const MONTH_THEMES: Record<string, MonthTheme> = {
       'radial-gradient(ellipse at 50% 82%, rgba(26,58,139,0.40) 0%, transparent 64%), radial-gradient(ellipse at 50% 30%, rgba(200,160,48,0.30) 0%, transparent 52%), radial-gradient(ellipse at 15% 12%, rgba(200,160,48,0.20) 0%, transparent 55%)',
     stripeGrad: 'linear-gradient(to left, #0A1A6B, #2A4AB8)',
   },
-  // טבת — Coldest month, frost and ice
+  // טבת — Winter in Jerusalem, snow over the ancient citadel and walls
   Tevet: {
-    accent: '#3A4A6A',
-    accentSoft: '#5A6A8A',
+    accent: '#264264',
+    accentSoft: '#3C5E88',
     shabbat: '#1A4A3A',
-    gold: '#7A8A6A',
-    photo: unsplash('1632307941173-5d541ea1d940'), // misty grey forest, rain in the air
+    gold: '#9A7A3A',
+    photo: jerusalemSnowImg,
     photoStyle: {
       backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      filter: 'grayscale(0.35) blur(1px)',
+      backgroundPosition: 'center 35%',
+      filter: 'none',
     },
-    paperOpacity: 0.6,
+    paperOpacity: 0.52,
     tintGrad:
-      'linear-gradient(to bottom, rgba(40,52,78,0.34) 0%, rgba(58,74,106,0.16) 50%, rgba(58,74,106,0.08) 100%)',
-    stripeGrad: 'linear-gradient(to left, #2A3A5A, #4A5A7A)',
+      'radial-gradient(ellipse at 50% 15%, rgba(60,94,136,0.18) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(200,165,85,0.14) 0%, transparent 55%)',
+    stripeGrad: 'linear-gradient(to left, #1B3250, #3C5E88)',
   },
   // שבט — Tu BiShvat, almond blossom
   "Sh'vat": {
