@@ -749,7 +749,9 @@ function DayCell({
             day.isFestive ? 'font-bold' : 'font-medium'
           } ${
             hasImage
-              ? 'inline-flex self-start rounded-sm bg-gradient-to-r from-amber-500 to-amber-600 px-1.5 py-0.5 text-[9px] sm:text-[9.5px] font-black text-white shadow-md border border-amber-300/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]'
+              ? day.isFestive
+                ? 'text-sky-300 font-bold [text-shadow:0_1px_3px_rgba(0,0,0,1),0_0_2px_rgba(0,0,0,0.9)]'
+                : 'text-amber-200 font-bold [text-shadow:0_1px_3px_rgba(0,0,0,1),0_0_2px_rgba(0,0,0,0.9)]'
               : day.isFestive
                 ? 'text-[var(--fest)]'
                 : day.holiday
